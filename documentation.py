@@ -339,7 +339,7 @@ def createPullRequestOnLabelWorkflow():
 if __name__ == "__main__":
     if arguments.workflow_event in ["push", "pull_request"]:
         checkingWorkflow()
-    elif arguments.workflow_event in ["label"]:
+    elif arguments.workflow_event in ["issues"]:
         createPullRequestOnLabelWorkflow()
     else:
         Octokit.error("Unknown event: " + str(arguments.workflow_event))
