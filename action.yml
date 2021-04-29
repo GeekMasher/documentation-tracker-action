@@ -29,5 +29,7 @@ runs:
           --github-repository ${{ github.repository }} \
           --github-event ${{ github.event_path }} \
           --workflow-event ${{ github.event_name }}
+        echo "::set-output name=PULLREQUEST_NAME::$PULLREQUEST_NAME"
+        echo "::set-output name=PULLREQUEST_ASSIGNEE::$PULLREQUEST_ASSIGNEE"
 
       shell: bash
