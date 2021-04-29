@@ -34,16 +34,21 @@ GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
 GITHUB_EVENT_NAME = os.environ.get("GITHUB_EVENT_NAME")
 
+
+def splitbycomma(argument):
+    return str(argument).split(',')
+
+
 parser = argparse.ArgumentParser("documentation-tracker-action")
 
 parser.add_argument("-i", "--working-directory", default=os.getcwd(), type=str)
-parser.add_argument("-p", "--paths", action="append")
-parser.add_argument("--file-types", default=["md"], action="append")
+parser.add_argument("-p", "--paths", default=[], type=splitbycomma)
+parser.add_argument("--file-types", default=["md"], type=splitbycomma)
 parser.add_argument("--ignore-readme", action="store_false")
 # Defaults for
-parser.add_argument("-o", "--default-owners", action="append")
+parser.add_argument("-o", "--default-owners", default=[], type=splitbycomma)
 parser.add_argument(
-    "-l", "--default-labels", default=DEFAULT_REVIEW_REQUEST_LABELS, action="append"
+    "-l", "--default-labels", default=DEFAULT_REVIEW_REQUEST_LABELS, type=splitbycomma
 )
 # Review
 parser.add_argument("--review-days", default=DEFAULT_REVIEW_DAYS)
@@ -220,11 +225,19 @@ def createReviewRequest(msg, name, filepath, owners=[]):
 if __name__ == "__main__":
     files = []
     paths = arguments.paths
+
     if not arguments.paths:
         paths = os.listdir(arguments.working_directory)
 
+    working_path = os.path.abspath(arguments.working_directory)
+    Octokit.debug("Working path: " + working_path)
+
+    if not os.path.exists(working_path):
+        Octokit.error("Selected working path does not exist")
+        raise Exception("Working path incorrect")
+
     for path in paths:
-        full_path = os.path.join(arguments.working_directory, path)
+        full_path = os.path.join(working_path, path)
 
         if not os.path.isdir(full_path):
             continue
