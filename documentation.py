@@ -313,7 +313,7 @@ def createPullRequestOnLabelWorkflow():
         data = handle.read()
 
     metadata = findMetaDataInFile(filepath)
-    new_metadata = yaml.load(metadata)
+    new_metadata = yaml.safe_load(metadata)
 
     now = datetime.datetime.now()
 
@@ -327,9 +327,8 @@ def createPullRequestOnLabelWorkflow():
     with open(filepath, 'w') as handle:
         handle.write(new_data)
 
-
     Octokit.info("Setting Actions output...")
-    Octokit.setOutput('PULLREQUEST', 'true')
+
     Octokit.setOutput('PULLREQUEST_NAME', name + " (update)")
     Octokit.setOutput('PULLREQUEST_ASSIGNEE', event.get('issue', {}).get('assignee', {}).get('login'))
 
