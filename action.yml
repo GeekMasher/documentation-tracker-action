@@ -11,5 +11,14 @@ inputs:
     required: false
 
 runs:
-  using: "docker"
-  image: "Dockerfile"
+  using: "composite"
+  steps:
+    - name: test
+      run: |
+        python3 "${{ github.action_path }}/process.py" \
+          -p "${{ inputs.paths }}" \
+          -o "${{ inputs.default-owners }}" \
+          --github-token ${{ github.token }} \
+          --github-repository ${{ github.repository }} \
+          --workflow-event ${{ github.event_name }}
+      shell: bash
