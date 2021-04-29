@@ -9,6 +9,9 @@ inputs:
   default-owners:
     description: 'Owners for all the documentation and are tagged automatically'
     required: false
+  label-closing:
+    description: 'Label which creates a PR with updates'
+    required: true
 
 runs:
   using: "composite"
@@ -21,7 +24,10 @@ runs:
         python3 "${{ github.action_path }}/documentation.py" \
           -p "${{ inputs.paths }}" \
           -o "${{ inputs.default-owners }}" \
+          -c "${{ inputs.label-closing }}" \
           --github-token ${{ github.token }} \
           --github-repository ${{ github.repository }} \
+          --github-event ${{ github.event_path }} \
           --workflow-event ${{ github.event_name }}
+
       shell: bash

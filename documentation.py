@@ -11,7 +11,7 @@ DEFAULT_OWNERS = []
 
 DEFAULT_REVIEW_DAYS = 90
 DEFAULT_REVIEW_REQUEST_LABELS = ["documentation"]
-
+DEFAULT_TITLE_PREFIX = "Docs: Review Request - "
 DEFAULT_REVIEW_REQUEST_BODY = """\
 ### Reason
 
@@ -33,6 +33,7 @@ Please add the following labels or update your documentation to reflect new chan
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
 GITHUB_EVENT_NAME = os.environ.get("GITHUB_EVENT_NAME")
+GITHUB_EVENT_PATH = os.environ.get("GITHUB_EVENT_PATH")
 
 
 def splitbycomma(argument):
@@ -52,9 +53,12 @@ parser.add_argument(
 )
 # Review
 parser.add_argument("--review-days", default=DEFAULT_REVIEW_DAYS)
+parser.add_argument('-c', '--closing-labels', default=[], type=splitbycomma)
 # GitHub arguments
 parser.add_argument("--github-token", default=GITHUB_TOKEN)
 parser.add_argument("--github-repository", default=GITHUB_REPOSITORY)
+parser.add_argument("--github-labels", default=['uptodate'], type=splitbycomma)
+parser.add_argument("--github-event", default=GITHUB_EVENT_PATH)
 parser.add_argument("--workflow-event", default=GITHUB_EVENT_NAME)
 
 arguments = parser.parse_args()
@@ -89,6 +93,19 @@ class Octokit:
             print("::error file={file},line=0,col=0::{msg}".format(msg=msg, file=file))
         else:
             print("::error ::{msg}".format(msg=msg))
+
+    @staticmethod
+    def setOutput(key, value):
+        print("::set-output name={}::{}".format(key, value))
+
+    @staticmethod
+    def loadEvents(path: str):
+        Octokit.info("Loading event: " + str(path))
+        event = {}
+        if os.path.exists(path):
+            with open(path, 'r') as handle:
+                event = yaml.safe_load(handle)
+        return event
 
 
 def findFiles(root: str, file_types: list, ingore_readme: bool = True) -> list:
@@ -132,7 +149,7 @@ def findMetaDataInFile(path: str):
     if block is None or str(block) == "None":
         return
 
-    return yaml.safe_load(block.text)
+    return block.text
 
 
 def metadataChecking(metadata: dict, filepath: str):
@@ -190,7 +207,7 @@ def metadataChecking(metadata: dict, filepath: str):
 def createReviewRequest(msg, name, filepath, owners=[]):
     Octokit.error(msg)
 
-    title = "Docs: Review Request - " + name
+    title = DEFAULT_TITLE_PREFIX + name
     issue_exists = True
 
     for issue in repo.get_issues(state="open"):
@@ -222,7 +239,7 @@ def createReviewRequest(msg, name, filepath, owners=[]):
         # TODO: Check if the issue has been open for X days
 
 
-if __name__ == "__main__":
+def checkingWorkflow():
     files = []
     paths = arguments.paths
 
@@ -230,8 +247,8 @@ if __name__ == "__main__":
         paths = os.listdir(arguments.working_directory)
 
     working_path = os.path.abspath(arguments.working_directory)
-    Octokit.debug("Working path: " + working_path)
-    Octokit.debug("Workflow type: " + arguments.workflow_event)
+    Octokit.info("Working path: " + working_path)
+    Octokit.info("Workflow type: " + arguments.workflow_event)
 
     if not os.path.exists(working_path):
         Octokit.error("Selected working path does not exist")
@@ -255,6 +272,8 @@ if __name__ == "__main__":
             Octokit.error("No metadata present in file", markdown_file)
             continue
 
+        metadata = yaml.safe_load(metadata)
+
         metadataChecking(
             metadata, markdown_file.replace(arguments.working_directory + "/", "")
         )
@@ -264,3 +283,58 @@ if __name__ == "__main__":
         raise Exception("Errors present")
 
     Octokit.info("Successfully analysed files")
+
+
+def createPullRequestOnLabelWorkflow():
+    # validate the label
+
+    event = Octokit.loadEvents(arguments.github_event)
+
+    # Check the title to see if it's a documentation tracker issue
+    name = event.get('issue', {}).get('title')
+    if name is None or not name.startswith(DEFAULT_TITLE_PREFIX):
+        Octokit.info("Skipping issue, does not match criteria (title match)")
+        return
+
+    label = event.get('label', {}).get('name')
+
+    if label not in arguments.closing_labels:
+        Octokit.info('Skipping as label is incorrect')
+        return
+
+    # Pull Request
+
+    body = event.get('issue', {}).get('body')
+    _, filepath, _ = body.split('```', 3)
+    filepath = os.path.join(arguments.working_directory, filepath.replace('\n', ''))
+
+    with open(filepath, 'r') as handle:
+        data = handle.read()
+
+    metadata = findMetaDataInFile(filepath)
+    new_metadata = yaml.load(metadata)
+
+    now = datetime.datetime.now()
+
+    if new_metadata.get('datetime', {}).get('updated'):
+        new_metadata['datetime']['updated'] = now.strftime("%Y/%m/%d")
+
+    new_data = data.replace(metadata, yaml.dump(new_metadata))
+
+    with open(filepath, 'w') as handle:
+        handle.write(new_data)
+
+    Octokit.setOutput('PULLREQUEST', 'true')
+    Octokit.setOutput('PULLREQUEST_NAME', name + " (update)")
+    Octokit.setOutput('PULLREQUEST_ASSIGNEE', event.get('issue', {}).get('assignee', {}).get('login'))
+
+    # Comment in Issue
+
+    return
+
+
+if __name__ == "__main__":
+    if arguments.workflow_event in ["push", "pull_request"]:
+        checkingWorkflow()
+    elif arguments.workflow_event in ["label"]:
+        createPullRequestOnLabelWorkflow()
