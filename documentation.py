@@ -303,6 +303,7 @@ def createPullRequestOnLabelWorkflow():
         return
 
     # Pull Request
+    Octokit.info('Validation complete, automatically creating Pull Request')
 
     body = event.get('issue', {}).get('body')
     _, filepath, _ = body.split('```', 3)
@@ -320,6 +321,8 @@ def createPullRequestOnLabelWorkflow():
         new_metadata['datetime']['updated'] = now.strftime("%Y/%m/%d")
 
     new_data = data.replace(metadata, yaml.dump(new_metadata))
+
+    Octokit.info('Replacing markdown file with updated datetime')
 
     with open(filepath, 'w') as handle:
         handle.write(new_data)
