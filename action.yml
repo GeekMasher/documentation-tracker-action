@@ -1,0 +1,12 @@
+name: 'documentation-tracker-action'
+
+description: 'GitHub Documentation Tracker Action'
+
+inputs:
+  paths:
+    description: 'Paths to where the documentation you want to track is stored'
+    required: false
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
