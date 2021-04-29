@@ -98,7 +98,6 @@ class Octokit:
     def setOutput(key, value):
         print("::set-output name={}::{}".format(key, value))
         subprocess.call(["echo", "::set-output name={}::{}".format(key, value)])
-        os.putenv(key, value)
 
     @staticmethod
     def loadEvents(path: str):
