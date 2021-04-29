@@ -30,6 +30,10 @@ Please add the following labels or update your documentation to reflect new chan
 +cc {default_owners}
 """
 
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
+GITHUB_EVENT_NAME = os.environ.get("GITHUB_EVENT_NAME")
+
 parser = argparse.ArgumentParser("documentation-tracker-action")
 
 parser.add_argument("-i", "--working-directory", default=os.getcwd(), type=str)
@@ -44,9 +48,9 @@ parser.add_argument(
 # Review
 parser.add_argument("--review-days", default=DEFAULT_REVIEW_DAYS)
 # GitHub arguments
-parser.add_argument("--github-token", default=os.environ.get("GITHUB_TOKEN"))
-parser.add_argument("--github-repository", default=os.environ.get("GITHUB_REPOSITORY"))
-parser.add_argument("--workflow-event", default=os.environ.get("GITHUB_EVENT_NAME"))
+parser.add_argument("--github-token", default=GITHUB_TOKEN)
+parser.add_argument("--github-repository", default=GITHUB_REPOSITORY)
+parser.add_argument("--workflow-event", default=GITHUB_EVENT_NAME)
 
 arguments = parser.parse_args()
 
