@@ -330,8 +330,8 @@ def createPullRequestOnLabelWorkflow():
 
     Octokit.info("Setting Actions output...")
 
-    Octokit.setOutput('PULLREQUEST_NAME', name + " (update)")
-    Octokit.setOutput('PULLREQUEST_ASSIGNEE', event.get('issue', {}).get('assignee', {}).get('login'))
+    Octokit.setOutput('request_name', name + " (update)")
+    Octokit.setOutput('request_assignee', event.get('issue', {}).get('assignee', {}).get('login'))
 
     Octokit.info('Actions Output set')
 
