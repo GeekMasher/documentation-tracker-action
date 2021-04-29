@@ -231,6 +231,7 @@ if __name__ == "__main__":
 
     working_path = os.path.abspath(arguments.working_directory)
     Octokit.debug("Working path: " + working_path)
+    Octokit.debug("Workflow type: " + arguments.workflow_event)
 
     if not os.path.exists(working_path):
         Octokit.error("Selected working path does not exist")
