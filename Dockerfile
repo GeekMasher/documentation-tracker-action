@@ -1,11 +1,11 @@
 FROM python:3.9-slim
 
-WORKDIR /app
+WORKDIR /documentation-tracker
 
 COPY . .
 
 RUN pip install pipenv && pipenv install --system --deploy
 
-ENV PYTHONPATH /app
+WORKDIR /workspace
 
-CMD ["/app/documentation.py"]
+ENTRYPOINT [ "python3", "/documentation-tracker/documentation.py"]
