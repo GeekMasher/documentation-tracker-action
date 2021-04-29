@@ -15,7 +15,7 @@ runs:
   steps:
     - name: test
       run: |
-        python3 "${{ github.action_path }}/process.py" \
+        python3 "${{ github.action_path }}/documentation.py" \
           -p "${{ inputs.paths }}" \
           -o "${{ inputs.default-owners }}" \
           --github-token ${{ github.token }} \
