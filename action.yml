@@ -15,7 +15,9 @@ runs:
   steps:
     - name: test
       run: |
-        pip install pipenv && pipenv install --system --deploy
+        echo "::group::Installing" && \
+          pip install pipenv && pipenv install --system --deploy && \
+          echo "::endgroup::"
         python3 "${{ github.action_path }}/documentation.py" \
           -p "${{ inputs.paths }}" \
           -o "${{ inputs.default-owners }}" \
