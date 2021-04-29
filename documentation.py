@@ -96,7 +96,7 @@ class Octokit:
 
     @staticmethod
     def setOutput(key, value):
-        subprocess.check_call(["echo", "::set-output name={}::{}".format(key, value)])
+        subprocess.call(["echo", "::set-output name={}::{}".format(key, value)])
 
     @staticmethod
     def loadEvents(path: str):
