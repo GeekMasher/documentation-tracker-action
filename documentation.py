@@ -50,6 +50,12 @@ parser.add_argument("--workflow-event", default=os.environ.get("GITHUB_EVENT_NAM
 
 arguments = parser.parse_args()
 
+if not arguments.github_token:
+    raise Exception("Github Access Token required")
+if not arguments.github_repository:
+    raise Exception("Github Repository required")
+
+
 errors = []
 github = Github(arguments.github_token)
 repo = github.get_repo(arguments.github_repository)
