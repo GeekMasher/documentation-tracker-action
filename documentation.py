@@ -1,5 +1,5 @@
 import os
-from typing import Container
+import time
 import yaml
 import argparse
 import datetime
@@ -320,7 +320,7 @@ def createPullRequestOnLabelWorkflow():
     if new_metadata.get('datetime', {}).get('updated'):
         new_metadata['datetime']['updated'] = now.strftime("%Y/%m/%d")
 
-    new_data = data.replace(metadata, yaml.dump(new_metadata))
+    new_data = data.replace(metadata, yaml.safe_dump(new_metadata))
 
     Octokit.info('Replacing markdown file with updated datetime')
 
@@ -341,5 +341,7 @@ if __name__ == "__main__":
         checkingWorkflow()
     elif arguments.workflow_event in ["issues"]:
         createPullRequestOnLabelWorkflow()
+        # Waiting to make sure Actions catches up
+        time.sleep(3)
     else:
         Octokit.error("Unknown event: " + str(arguments.workflow_event))
