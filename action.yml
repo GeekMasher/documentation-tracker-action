@@ -6,6 +6,9 @@ inputs:
   paths:
     description: 'Paths to where the documentation you want to track is stored'
     required: false
+  default-owners:
+    description: 'Owners for all the documentation and are tagged automatically'
+    required: false
 
 runs:
   using: "docker"

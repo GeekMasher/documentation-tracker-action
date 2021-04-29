@@ -1,11 +1,11 @@
-FROM python:3-slim
+FROM python:3.9-slim
 
-WORKDIR /action
+WORKDIR /app
 
 COPY . .
 
 RUN pip install pipenv && pipenv install --system --deploy
 
-ENV PYTHONPATH /action
+ENV PYTHONPATH /app
 
-CMD ["/action/documentation.py"]
+CMD ["/app/documentation.py"]

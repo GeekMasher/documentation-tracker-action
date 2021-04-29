@@ -37,9 +37,9 @@ parser.add_argument("-p", "--paths", action="append")
 parser.add_argument("--file-types", default=["md"], action="append")
 parser.add_argument("--ignore-readme", action="store_false")
 # Defaults for
-parser.add_argument("-o", "--default-owners", default=[], type=list)
+parser.add_argument("-o", "--default-owners", action="append")
 parser.add_argument(
-    "-l", "--default-labels", default=DEFAULT_REVIEW_REQUEST_LABELS, type=list
+    "-l", "--default-labels", default=DEFAULT_REVIEW_REQUEST_LABELS, action="append"
 )
 # Review
 parser.add_argument("--review-days", default=DEFAULT_REVIEW_DAYS)
