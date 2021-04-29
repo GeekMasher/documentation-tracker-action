@@ -1,9 +1,9 @@
 import os
-import time
 import yaml
 import argparse
 import datetime
 import markdown
+import subprocess
 import xml.etree.ElementTree as ET
 from github import Github
 
@@ -96,7 +96,7 @@ class Octokit:
 
     @staticmethod
     def setOutput(key, value):
-        print("::set-output name={}::{}".format(key, value))
+        subprocess.check_call(["echo", "::set-output name={}::{}".format(key, value)])
 
     @staticmethod
     def loadEvents(path: str):
@@ -327,9 +327,13 @@ def createPullRequestOnLabelWorkflow():
     with open(filepath, 'w') as handle:
         handle.write(new_data)
 
+
+    Octokit.info("Setting Actions output...")
     Octokit.setOutput('PULLREQUEST', 'true')
     Octokit.setOutput('PULLREQUEST_NAME', name + " (update)")
     Octokit.setOutput('PULLREQUEST_ASSIGNEE', event.get('issue', {}).get('assignee', {}).get('login'))
+
+    Octokit.info('Actions Output set')
 
     # Comment in Issue
 
@@ -341,7 +345,5 @@ if __name__ == "__main__":
         checkingWorkflow()
     elif arguments.workflow_event in ["issues"]:
         createPullRequestOnLabelWorkflow()
-        # Waiting to make sure Actions catches up
-        time.sleep(3)
     else:
         Octokit.error("Unknown event: " + str(arguments.workflow_event))
